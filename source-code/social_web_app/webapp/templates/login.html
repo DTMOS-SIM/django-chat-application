@@ -1,0 +1,38 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<main class="form-signin w-50 position-absolute top-50 start-50 translate-middle">
+  <form id="login_form" method="post" action="/login/" enctype="multipart/form-data">
+
+    {% csrf_token %}
+    <div class="text-center">
+      <img class="mb-4 " src="../static/link.png" alt="" width="72">
+      <h5 class="display-6 mb-3">Social Application</h5>
+
+      {% if failed %}
+      <div class="alert alert-primary" role="alert">
+        {{message}}
+        {{errors}}
+      </div>
+      {% endif %}
+
+    </div>
+
+    <p class="mb-3 text-center">Sign In</p>
+    <div class="form-floating mb-3">
+      {{login_form.username}}
+      <label for="username">Username</label>
+    </div>
+    <div class="form-floating mb-3">
+      {{login_form.password}}
+      <label for="password">Password</label>
+    </div>
+
+    <div class="text-center">
+      <button class="w-100 btn btn-default text-white" type="submit" style="background-color: #45d0b0">Login</button>
+      <p class="mt-5 mb-3 text-muted text-center">&copy; 2023, Academic Presentation Only</p>
+    </div>
+  </form>
+  <a class="w-100 btn btn-link" href="../signup">No Account? Sign Up Now!</a>
+</main>
+{% endblock %}

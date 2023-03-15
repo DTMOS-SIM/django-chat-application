@@ -1,0 +1,167 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+{% include "../partials/header.html" %}
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 col-lg-9">
+            <div class="d-flex flex-column bd-highlight">
+                <!--Friends Section-->
+                <div class="p-2 bd-highlight">
+                    <div class="card">
+                        <div class="card-header">
+                            Friends
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-left flex-wrap">
+                                {% if friends %}
+                                {% for friend in friends %}
+                                <div class="p-2 bd-highlight">
+                                    <div class="card text-dark bg-light mb-3" style="width: 13rem;">
+                                        <img src="../../static/1.png" class="card-img-top" alt="..."
+                                             style="padding: 1.5rem;">
+                                        <div class="card-body">
+                                            <h5 class="card-title" style="font-size: 18px;">{{ friend.user.first_name }}
+                                                {{ friend.user.last_name }}</h5>
+                                            <p class="text-muted">{{ friend.user.username }}</p>
+                                            <h6 class="card-subtitle mb-2 text-muted" style="font-size: 14px;">{{ friend.dob }}</h6>
+                                            <p class="card-text" style="font-size: 12px;">{{ friend.gender }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="p-3 bd-highlight">
+                                    <p class="display-6">
+                                        Please socialise and make more friends....
+                                    </p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Chat Room Section-->
+                <div class="p-2 bd-highlight">
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            Chat Rooms
+                        </div>
+                        <div class="card-body">
+                            {% if existing_rooms %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Room Name</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Owner</th>
+                                        <th scope="col">Join?</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for room in existing_rooms %}
+                                    <tr>
+                                        <td class="align-middle">{{ room.id }}</td>
+                                        <td class="align-middle">{{ room.name }}</td>
+                                        <td class="align-middle">{{ room.description }}</td>
+                                        <td class="align-middle">{{ room.user.user.first_name }} {{ room.user.user.last_name }}</td>
+                                        <td class="align-middle">
+                                            <a href="../chat/{{room.name}}">Chat</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <h5 class="card-title">No existing rooms at the moment</h5>
+                            <p class="card-text">Please start a conversation with someone. I beg you.....</p>
+                            {% endif %}
+                            <a href="../room/" class="btn btn-primary">Create Chat</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Profile Section-->
+        <div class="col-12 col-lg-3">
+            <div class="card mt-2">
+                <div class="card-header">
+                    Profile
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column">
+                        <div class="p-3">
+                            {% if current_image %}
+                                <img src="{{ current_image }}" class="rounded mx-auto d-block" alt="..." style="width: 50%">
+                            {% else %}
+                                <img src="../../static/1.png" class="rounded mx-auto d-block" alt="..." style="width: 50%">
+                            {% endif %}
+                            <form id="image_form" method="post" action="/home/" enctype="multipart/form-data" style="margin-top: 1rem;">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                  <label class="form-label fs-6">Name</label>
+                                  {{image_form.name}}
+                                </div>
+                                <div class="input-group mb-0">
+                                    <div class="mb-3">
+                                        {{image_form.description}}
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-sm btn-primary"
+                                            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                                        Upload
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <hr/>
+                        <div class="p-1">
+                            <ul class="list-group list-group-horizontal">
+                                <li class="list-group-item">Name</li>
+                                <li class="list-group-item">{{ personal.first_name }} {{ personal.last_name }}</li>
+                            </ul>
+                        </div>
+                        <div class="p-1">
+                            <ul class="list-group list-group-horizontal">
+                                <li class="list-group-item">Username</li>
+                                <li class="list-group-item">{{ personal.username }}</li>
+                            </ul>
+                        </div>
+                        <div class="p-1">
+                            <ul class="list-group list-group-horizontal">
+                                <li class="list-group-item">Email</li>
+                                <li class="list-group-item">{{ personal.email }}</li>
+                            </ul>
+                        </div>
+                        <div class="p-1">
+                            <ul class="list-group list-group-horizontal">
+                                <li class="list-group-item">Gender</li>
+                                <li class="list-group-item">{{ personal_details.gender }}</li>
+                            </ul>
+                        </div>
+                        <div class="p-1">
+                            <ul class="list-group list-group-horizontal">
+                                <li class="list-group-item">Date-Of-Birth</li>
+                                <li class="list-group-item">{{ personal_details.dob }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% include "../partials/footer.html" %}
+
+{% endblock %}
+
+

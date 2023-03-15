@@ -1,0 +1,271 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+{% include "../partials/header.html" %}
+<!--<p class="display-2" id="room_name">
+    {{ room_name }}
+</p>
+<textarea id="chat-log" cols="100" rows="20"></textarea><br>
+<input id="chat-message-input" type="text" size="100"><br>
+<input id="chat-message-submit" type="button" value="Send">
+{{ room_name|json_script:"room-name" }}-->
+
+<div class="d-flex flex-column bd-highlight mb-3">
+    <!--Header-->
+    <div class="p-3 bd-highlight">
+        <div class="d-flex justify-content-between">
+            <div class="p-2">
+                <a href="../../home">Back</a>
+            </div>
+            <div class="p-2">
+                <button class="btn btn-info btn-sm">Details</button>
+            </div>
+        </div>
+    </div>
+    <div class="p-3 bd-highlight">
+        <div class="row">
+            <div class="col-12">
+                <div class="card text-center w-100">
+
+                    <div class="card-header fw-bold" id="room_name" style="font-size: 30px;">{{ room_name }}</div>
+                    <div id="userId" hidden="True">{{ userId }}</div>
+                    <div id="user" hidden="True">{{ user.id }}</div>
+                    <div id="room" hidden="True">{{ room }}</div>
+
+                    <div class="card-body">
+
+                        <!--History Session Area-->
+
+                        <!--Other's Text Message-->
+                        {% for chat in history_others %}
+                        <div class="d-flex bd-highlight">
+                            <div class="p-2 flex-shrink-1 bd-highlight">
+                                <div class="badge bg-primary text-start" style="width:auto; font-size: 14px;">
+                                    {{chat.message}}
+                                </div>
+                            </div>
+                            <div class="p-2 w-100 bd-highlight"></div>
+                        </div>
+                        {% endfor %}
+
+                        <!--My Text Message-->
+                        {% for chat in history_personal %}
+                        <div class="d-flex bd-highlight">
+                            <div class="p-2 w-100 bd-highlight"></div>
+                            <div class="p-2 flex-shrink-1 bd-highlight">
+                                <div class="badge bg-light text-dark" style="width:auto; font-size: 14px;">
+                                    {{chat.message}}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+
+                        <div class="text-center" style="margin: 1rem">
+                            <hr style="margin-bottom: -13px; z-index: -1; opacity: 1.75; color: lightgrey"/>
+                            <span class="badge text-bg-light">History</span>
+                        </div>
+
+                        <!--New Session Area-->
+
+                        <!--Other's Text Message-->
+                        <div id="other-message">
+                        </div>
+
+                        <!--My Text Message-->
+                        <div id="my-message">
+                        </div>
+
+                    </div>
+
+                    <!--Input Group-->
+                    <div class="card-footer text-muted">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="input-group mb-0">
+                                <input id="chat-message-input" type="text" class="form-control"
+                                       placeholder="Send message">
+                                <button class="btn btn-outline-secondary" value="send" type="button"
+                                        id="chat-message-submit">Send
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="p-3 bd-highlight">
+
+    </div>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+    // Get cookie by name
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Wrapper to send HTTP requests using csrf request header
+    function sendHttpAsync(path, method, body) {
+        let props = {
+            method: method,
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            mode: "same-origin",
+        }
+
+        if (body !== null && body !== undefined) {
+            props.body = JSON.stringify(body);
+        }
+
+        return fetch(path, props)
+            .then(async response => {
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : null;
+                // check for error response
+                if (!response.ok) {
+                    // get error message from body or default to response status
+                    const error = (data && data.message) || response.status;
+                    return Promise.reject(error);
+                }
+                console.log(data)
+            })
+            .catch(error => {
+                console.error('Error: ', error);
+            });
+    }
+
+    const roomName = document.getElementById('room_name').innerHTML;
+    const userId = document.getElementById('userId').innerHTML;
+    const room = document.getElementById('room').innerHTML;
+    const user = document.getElementById('user').innerHTML;
+    const csrf_token = '{{ csrf_token }}'
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        console.log(data)
+
+        if (data.message.chatId == String(userId)) {
+            var div_1 = document.createElement('div');
+            div_1.setAttribute('class', 'd-flex bd-highlight');
+
+            var div_2 = document.createElement('div');
+            div_2.setAttribute('class', 'p-2 w-100 bd-highlight');
+
+            var div_3 = document.createElement('div');
+            div_3.setAttribute('class', 'p-2 flex-shrink-1 bd-highlight');
+
+            div_1.appendChild(div_2);
+            div_1.appendChild(div_3);
+
+            var div_4 = document.createElement('div');
+            div_4.setAttribute('class', 'badge bg-light text-dark');
+            div_4.style.fontSize = '14px';
+            div_4.style.width = 'auto';
+            div_4.innerText = data.message.message
+
+            div_3.appendChild(div_4)
+
+            document.getElementById('my-message').appendChild(div_1);
+        }
+        else {
+            var div_1 = document.createElement('div');
+            div_1.setAttribute('class', 'd-flex bd-highlight');
+
+            var div_2 = document.createElement('div');
+            div_2.setAttribute('class', 'p-2 flex-shrink-1 bd-highlight');
+
+            var div_3 = document.createElement('div');
+            div_3.setAttribute('class', 'p-2 w-100 bd-highlight');
+
+            div_1.appendChild(div_2);
+            div_1.appendChild(div_3);
+
+            var div_4 = document.createElement('div');
+            div_4.setAttribute('class', 'badge bg-primary text-start');
+            div_4.style.fontSize = '14px';
+            div_4.style.width = 'auto';
+            div_4.innerText = data.message.message
+
+            div_2.appendChild(div_4)
+
+            document.getElementById('other-message').appendChild(div_1);
+        }
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        console.log(message)
+        if (message != "") {
+            const requestBody = {
+                message: message,
+                user: user,
+                room: room,
+                csrfmiddlewaretoken: csrf_token,
+            }
+
+            // Send message back to db for logging
+            sendHttpAsync("/api/chat/message/", "POST", requestBody)
+                .then(response => {
+                    console.log(response);
+                });
+
+            // Update Socket
+            chatSocket.send(JSON.stringify({
+                message: {
+                    chatId: userId,
+                    message: message
+                }
+            }))
+
+            messageInputDom.value = '';
+        } else {
+            console.log("No message")
+        }
+
+    };
+</script>
+
+{% include "../partials/footer.html" %}
+
+{% endblock %}
